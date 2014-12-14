@@ -1,11 +1,12 @@
 angular.module('app')
-.factory('LocalDB', function() {
+.factory('LocalDB', function($q, $timeout) {
 
   // Base class for using localStorage as a database
   function LocalDB(override) {
     this._itemName = null;
     this._collection = [];
     this._justSet = false;
+    this.usePromises = true;
 
     // Check localStorage to see if the item exists
     this._init = function() {
@@ -41,7 +42,15 @@ angular.module('app')
 
     // alias for getCollection
     this.getAll = function() {
-      return this.getCollection();
+      if(this.usePromises) {
+        var defer = $q.defer();
+        $timeout(function() {
+          defer.resolve(this.getCollection());
+        }.bind(this));
+        return defer.promise;
+      } else {
+        return this.getCollection();
+      }      
     };
 
     // Return one item in the collection
@@ -49,7 +58,15 @@ angular.module('app')
       var result = this.getCollection().filter(function(models) {
         return models.id === data.id;
       });
-      return result[0] || null;
+      if(this.usePromises) {
+        var defer = $q.defer();
+        $timeout(function() {
+          defer.resolve(result[0] || null);
+        });
+        return defer.promise;
+      } else {
+        return result[0] || null;
+      }
     };
 
     // Add an item to the collection
@@ -57,6 +74,13 @@ angular.module('app')
       model.id = this.getCollection().length + 1; 
       this.getCollection().push(model);
       this._set();
+      if(this.usePromises) {
+        var defer = $q.defer();
+        $timeout(function() {
+          defer.resolve(model);
+        });
+        return defer.promise;  
+      }    
     };
 
     // Update an item in the collection
@@ -64,6 +88,13 @@ angular.module('app')
       var model = this.getOne(data);
       angular.extend(model, updatedModel);
       this._set();
+      if(this.usePromises) {
+        var defer = $q.defer();
+        $timeout(function() {
+          defer.resolve(updatedModel);
+        });
+        return defer.promise;
+      }      
     };
 
     // Remove an item in the collection
@@ -81,6 +112,13 @@ angular.module('app')
         model.id = i + 1;
       });
       this._set();
+      if(this.usePromises) {
+        var defer = $q.defer();
+        $timeout(function() {
+          defer.resolve(data.id);
+        });
+        return defer.promise;
+      }
     };
 
     // Reset the localStorage item
