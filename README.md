@@ -1,6 +1,6 @@
 ## local-db
 Angular factory for using localStorage as a temporary database. Simply inject LocalDB into any angular provider. It
-also exposes localDB on window.DB for dev purposes.
+also exposes LocalDB on window.DB for dev purposes.
 
 ## Usage
 ```javascript
